@@ -1,10 +1,10 @@
 :root {
   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  color: #0f172a;
+  color: #e2e8f0;
   background:
-    radial-gradient(circle at top left, rgba(45, 212, 191, 0.3), transparent 24%),
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 20%),
-    linear-gradient(180deg, #f8fbff 0%, #edf4fb 100%);
+    radial-gradient(circle at top left, rgba(45, 212, 191, 0.16), transparent 24%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 20%),
+    linear-gradient(180deg, #020617 0%, #0f172a 100%);
 }
 
 * {
@@ -14,6 +14,7 @@
 body {
   margin: 0;
   min-width: 320px;
+  color: #e2e8f0;
 }
 
 button {
@@ -45,7 +46,7 @@ button {
 .summary-card p,
 .status-card,
 .eyebrow {
-  color: #475569;
+  color: #94a3b8;
 }
 
 .eyebrow {
@@ -70,9 +71,9 @@ button {
 .table-card,
 .chart-card,
 .status-card {
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 16px 44px rgba(15, 23, 42, 0.08);
+  background: rgba(15, 23, 42, 0.74);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  box-shadow: 0 18px 42px rgba(2, 6, 23, 0.45);
   backdrop-filter: blur(18px);
   border-radius: 24px;
 }
@@ -108,11 +109,30 @@ button {
   width: 100%;
 }
 
+.leaflet-container {
+  background: #0b1120;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.leaflet-control-attribution {
+  background: rgba(15, 23, 42, 0.78) !important;
+  color: #cbd5e1 !important;
+}
+
+.leaflet-control-attribution a {
+  color: #93c5fd !important;
+}
+
 .section-title {
   font-size: 0.88rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #64748b;
+  color: #93c5fd;
   margin-bottom: 14px;
 }
 
@@ -128,8 +148,8 @@ button {
   align-items: center;
   padding: 10px 14px;
   border-radius: 999px;
-  background: #e2e8f0;
-  color: #0f172a;
+  background: rgba(51, 65, 85, 0.95);
+  color: #f8fafc;
   font-weight: 600;
 }
 
@@ -153,7 +173,8 @@ button {
 .city-pill {
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(15, 23, 42, 0.84);
+  color: #e2e8f0;
   padding: 14px;
   display: flex;
   justify-content: space-between;
@@ -162,8 +183,8 @@ button {
 }
 
 .city-pill.active {
-  border-color: #0f766e;
-  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.12);
+  border-color: #2dd4bf;
+  box-shadow: 0 10px 24px rgba(20, 184, 166, 0.2);
 }
 
 .modal-backdrop {
@@ -190,6 +211,7 @@ button {
   right: 16px;
   border: 0;
   background: transparent;
+  color: #cbd5e1;
   font-size: 2rem;
   cursor: pointer;
 }
@@ -243,7 +265,7 @@ button {
   left: 50%;
   width: 5px;
   height: 76px;
-  background: #0f172a;
+  background: #e2e8f0;
   border-radius: 999px;
   transform-origin: bottom center;
 }
@@ -258,7 +280,7 @@ button {
 .gauge-label {
   text-align: center;
   margin-bottom: 12px;
-  color: #475569;
+  color: #94a3b8;
 }
 
 .data-grid {
@@ -270,7 +292,7 @@ button {
   justify-content: space-between;
   gap: 12px;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(203, 213, 225, 0.7);
+  border-bottom: 1px solid rgba(71, 85, 105, 0.7);
 }
 
 .data-row:last-child {
@@ -282,7 +304,7 @@ button {
 }
 
 .error-card {
-  color: #b91c1c;
+  color: #fca5a5;
   margin-bottom: 20px;
 }
 

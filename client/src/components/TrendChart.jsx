@@ -25,12 +25,19 @@ export default function TrendChart({ history }) {
       <div className="chart-wrap">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#dbe4f0" />
-            <XAxis dataKey="recordedAt" tick={{ fill: "#456" }} />
-            <YAxis yAxisId="left" tick={{ fill: "#456" }} />
-            <YAxis yAxisId="right" orientation="right" tick={{ fill: "#456" }} />
-            <Tooltip />
-            <Legend />
+            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+            <XAxis dataKey="recordedAt" tick={{ fill: "#cbd5e1" }} />
+            <YAxis yAxisId="left" tick={{ fill: "#cbd5e1" }} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fill: "#cbd5e1" }} />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "rgba(15, 23, 42, 0.95)",
+                border: "1px solid rgba(148, 163, 184, 0.4)",
+                borderRadius: "12px",
+                color: "#e2e8f0"
+              }}
+            />
+            <Legend wrapperStyle={{ color: "#e2e8f0" }} />
             <Line
               yAxisId="left"
               type="monotone"
