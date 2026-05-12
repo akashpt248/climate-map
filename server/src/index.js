@@ -1,4 +1,4 @@
-import cors from "cors";
+-import cors from "cors";
 import express from "express";
 import morgan from "morgan";
 import { connectDatabase } from "./config/db.js";
