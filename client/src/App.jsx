@@ -111,7 +111,8 @@ export default function App() {
         b.latestSnapshot.weather.temperature - a.latestSnapshot.weather.temperature
     )[0];
 
-  const selectedSnapshot = selectedCity?.latestSnapshot;
+  const selectedHistorySnapshot = history.length ? history[history.length - 1] : null;
+  const selectedSnapshot = selectedHistorySnapshot || selectedCity?.latestSnapshot || null;
 
   return (
     <div className="app-shell">
@@ -187,8 +188,10 @@ export default function App() {
                 <SummaryCard
                   title="Population"
                   value={
-                    selectedCity.population
-                      ? new Intl.NumberFormat().format(selectedCity.population)
+                    selectedSnapshot?.population || selectedCity.population
+                      ? new Intl.NumberFormat().format(
+                          selectedSnapshot?.population || selectedCity.population
+                        )
                       : "--"
                   }
                   subtitle="GeoDB sourced city population"
@@ -232,6 +235,7 @@ export default function App() {
       {selectedCity && isModalOpen ? (
         <CityModal
           city={selectedCity}
+          snapshot={selectedSnapshot}
           history={history}
           historyLoading={historyLoading}
           onClose={() => setIsModalOpen(false)}

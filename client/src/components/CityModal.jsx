@@ -19,13 +19,13 @@ function DataRow({ label, value }) {
 
 export default function CityModal({
   city,
+  snapshot,
   history,
   historyLoading,
   onClose
 }) {
   if (!city) return null;
 
-  const snapshot = city.latestSnapshot;
   const aqi = snapshot?.airQuality?.aqi;
 
   return (
@@ -69,7 +69,10 @@ export default function CityModal({
         <div className="table-card">
           <div className="section-title">Dashboard Table</div>
           <div className="data-grid">
-            <DataRow label="Population" value={formatNumber(city.population)} />
+            <DataRow
+              label="Population"
+              value={formatNumber(snapshot?.population ?? city.population)}
+            />
             <DataRow label="PM2.5" value={snapshot?.airQuality?.pm25 ?? "--"} />
             <DataRow label="PM10" value={snapshot?.airQuality?.pm10 ?? "--"} />
             <DataRow label="NO2" value={snapshot?.airQuality?.no2 ?? "--"} />
