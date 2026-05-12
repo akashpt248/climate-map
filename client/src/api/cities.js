@@ -56,12 +56,14 @@ function normalizeCity(city) {
   }
 
   const cityId = city._id || city.id || city.slug || city.name;
+  const routeId = city.id || city.slug || city.cityId || city._id || city.name;
   const latitude = city.latitude ?? city.lat ?? null;
   const longitude = city.longitude ?? city.lon ?? null;
 
   return {
     ...city,
     _id: cityId,
+    routeId,
     latitude,
     longitude,
     countryCode: city.countryCode || city.country_code || "",

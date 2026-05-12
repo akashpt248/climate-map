@@ -72,7 +72,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!selectedCity?._id) return;
+    const historyCityId = selectedCity?.routeId || selectedCity?._id;
+    if (!historyCityId) return;
 
     let ignore = false;
 
@@ -80,7 +81,7 @@ export default function App() {
       setHistoryLoading(true);
 
       try {
-        const payload = await fetchCityHistory(selectedCity._id, 7);
+        const payload = await fetchCityHistory(historyCityId, 7);
         if (!ignore) {
           setHistory(Array.isArray(payload.history) ? payload.history : []);
         }
@@ -101,7 +102,7 @@ export default function App() {
     return () => {
       ignore = true;
     };
-  }, [selectedCity?._id]);
+  }, [selectedCity?.routeId, selectedCity?._id]);
 
   const hottestCity = [...cities]
     .filter((city) => city.latestSnapshot?.weather?.temperature != null)
