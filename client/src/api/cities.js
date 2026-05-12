@@ -1,6 +1,22 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
+function hasSnapshotFields(value) {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  return [
+    "capturedAt",
+    "recordedAt",
+    "temperatureC",
+    "temperature",
+    "humidity",
+    "aqi",
+    "pm25"
+  ].some((key) => value[key] != null);
+}
+
 function normalizeSnapshot(snapshot) {
   if (!snapshot || typeof snapshot !== "object") {
     return null;
@@ -59,6 +75,14 @@ function normalizeCity(city) {
   const routeId = city.id || city.slug || city.cityId || city._id || city.name;
   const latitude = city.latitude ?? city.lat ?? null;
   const longitude = city.longitude ?? city.lon ?? null;
+  const latestSnapshotSource =
+    city.latestSnapshot && typeof city.latestSnapshot === "object"
+      ? city.latestSnapshot
+      : city.snapshot && typeof city.snapshot === "object"
+        ? city.snapshot
+        : hasSnapshotFields(city)
+          ? city
+          : null;
 
   return {
     ...city,
@@ -67,10 +91,7 @@ function normalizeCity(city) {
     latitude,
     longitude,
     countryCode: city.countryCode || city.country_code || "",
-    latestSnapshot:
-      city.latestSnapshot && typeof city.latestSnapshot === "object"
-        ? normalizeSnapshot(city.latestSnapshot)
-        : null
+    latestSnapshot: latestSnapshotSource ? normalizeSnapshot(latestSnapshotSource) : null
   };
 }
 
