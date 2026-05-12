@@ -11,9 +11,37 @@ import { hydrateCityMetadata, refreshCitySnapshots } from "./services/insightsSe
 
 const app = express();
 
+const explicitAllowedOrigins = [
+  env.clientOrigin,
+  ...env.clientOrigins
+].filter(Boolean);
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+
+  if (explicitAllowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  if (
+    env.allowVercelPreviewOrigins &&
+    /^https:\/\/[a-z0-9-]+-[-a-z0-9]+\.vercel\.app$/i.test(origin)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 app.use(
   cors({
-    origin: env.clientOrigin
+    origin(origin, callback) {
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    }
   })
 );
 app.use(express.json());

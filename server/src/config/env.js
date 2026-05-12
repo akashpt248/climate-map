@@ -5,6 +5,12 @@ dotenv.config();
 export const env = {
   port: Number(process.env.PORT || 5000),
   clientOrigin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+  clientOrigins: (process.env.CLIENT_ORIGINS || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+  allowVercelPreviewOrigins:
+    String(process.env.ALLOW_VERCEL_PREVIEW_ORIGINS || "true").toLowerCase() !== "false",
   mongodbUri: process.env.MONGODB_URI || "",
   openWeatherApiKey: process.env.OPENWEATHER_API_KEY || "",
   openAqApiKey: process.env.OPENAQ_API_KEY || "",
