@@ -21,6 +21,28 @@ button {
   font: inherit;
 }
 
+.loading-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #cbd5e1;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid rgba(148, 163, 184, 0.45);
+  border-top-color: #2dd4bf;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .app-shell {
   min-height: 100vh;
   padding: 24px;
@@ -161,6 +183,16 @@ button {
   background: linear-gradient(135deg, #0f766e, #0284c7);
   color: white;
   cursor: pointer;
+}
+
+.secondary-button {
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(30, 41, 59, 0.9);
+  color: #e2e8f0;
+  cursor: pointer;
+  margin-top: 12px;
 }
 
 .city-strip {

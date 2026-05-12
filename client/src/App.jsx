@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchCities, fetchCityHistory } from "./api/cities";
 import CityModal from "./components/CityModal";
+import LoadingSpinner from "./components/LoadingSpinner";
 import MapView from "./components/MapView";
 import {
   formatRate,
@@ -54,6 +55,10 @@ function buildSelectedSnapshot(city, history) {
 }
 
 export default function App() {
+  const pollIntervalMs = Math.max(
+    5000,
+    Number.parseInt(import.meta.env.VITE_POLL_INTERVAL_MS || "30000", 10) || 30000
+  );
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,9 +66,13 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState("");
+  const [historyError, setHistoryError] = useState("");
+  const [citiesRequestKey, setCitiesRequestKey] = useState(0);
+  const [historyRequestKey, setHistoryRequestKey] = useState(0);
 
   useEffect(() => {
     let ignore = false;
+    setLoading(true);
 
     async function loadCities() {
       try {
@@ -84,7 +93,9 @@ export default function App() {
         });
       } catch (requestError) {
         if (!ignore) {
-          setError(requestError.message);
+          setError(
+            `Failed to load cities. ${requestError.message || "Please try again."}`
+          );
           setCities([]);
           setSelectedCity(null);
         }
@@ -96,13 +107,13 @@ export default function App() {
     }
 
     loadCities();
-    const interval = setInterval(loadCities, 30000);
+    const interval = setInterval(loadCities, pollIntervalMs);
 
     return () => {
       ignore = true;
       clearInterval(interval);
     };
-  }, []);
+  }, [citiesRequestKey, pollIntervalMs]);
 
   useEffect(() => {
     const historyCityId = selectedCity?.routeId || selectedCity?._id;
@@ -112,6 +123,7 @@ export default function App() {
 
     async function loadHistory() {
       setHistoryLoading(true);
+      setHistoryError("");
 
       try {
         const payload = await fetchCityHistory(historyCityId, 7);
@@ -144,7 +156,11 @@ export default function App() {
       } catch (requestError) {
         if (!ignore) {
           setHistory([]);
-          console.error(requestError);
+          setHistoryError(
+            `Failed to load historical trends for ${selectedCity.name}. ${
+              requestError.message || "Please try again."
+            }`
+          );
         }
       } finally {
         if (!ignore) {
@@ -158,7 +174,7 @@ export default function App() {
     return () => {
       ignore = true;
     };
-  }, [selectedCity?.routeId, selectedCity?._id]);
+  }, [selectedCity?.routeId, selectedCity?._id, historyRequestKey]);
 
   const hottestCity = [...cities]
     .filter((city) => city.latestSnapshot?.weather?.temperature != null)
@@ -264,12 +280,27 @@ export default function App() {
         </div>
       </header>
 
-      {error ? <div className="status-card error-card">{error}</div> : null}
+      {error ? (
+        <div className="status-card error-card">
+          {error}
+          <button
+            className="secondary-button"
+            onClick={() => {
+              setError("");
+              setCitiesRequestKey((value) => value + 1);
+            }}
+          >
+            Retry city fetch
+          </button>
+        </div>
+      ) : null}
 
       <section className="content-grid">
         <div className="map-card">
           {loading ? (
-            <div className="status-card">Loading world map data...</div>
+            <div className="status-card">
+              <LoadingSpinner label="Loading world map data..." />
+            </div>
           ) : (
             <MapView
               cities={cities}
@@ -360,6 +391,8 @@ export default function App() {
           snapshot={selectedSnapshot}
           history={history}
           historyLoading={historyLoading}
+          historyError={historyError}
+          onRetryHistory={() => setHistoryRequestKey((value) => value + 1)}
           onClose={() => setIsModalOpen(false)}
         />
       ) : null}

@@ -1,5 +1,6 @@
 import TrendChart from "./TrendChart";
 import TemperatureGauge from "./TemperatureGauge";
+import LoadingSpinner from "./LoadingSpinner";
 import {
   formatNumber,
   formatRate,
@@ -22,6 +23,8 @@ export default function CityModal({
   snapshot,
   history,
   historyLoading,
+  historyError,
+  onRetryHistory,
   onClose
 }) {
   if (!city) return null;
@@ -85,7 +88,16 @@ export default function CityModal({
         </div>
 
         {historyLoading ? (
-          <div className="status-card">Loading historical trends...</div>
+          <div className="status-card">
+            <LoadingSpinner label="Loading historical trends..." />
+          </div>
+        ) : historyError ? (
+          <div className="status-card error-card">
+            {historyError}
+            <button className="secondary-button" onClick={onRetryHistory}>
+              Retry history fetch
+            </button>
+          </div>
         ) : (
           <TrendChart history={history} />
         )}
