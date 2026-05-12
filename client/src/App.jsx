@@ -35,17 +35,25 @@ export default function App() {
     async function loadCities() {
       try {
         const data = await fetchCities();
+        const nextCities = Array.isArray(data) ? data : [];
+
         if (ignore) return;
-        setCities(data);
-        setError("");
+        setCities(nextCities);
+        setError(nextCities.length ? "" : "No city data is available right now.");
 
         setSelectedCity((current) => {
-          if (!current) return data[0] || null;
-          return data.find((city) => city._id === current._id) || data[0] || null;
+          if (!current) return nextCities[0] || null;
+          return (
+            nextCities.find((city) => city?._id === current._id) ||
+            nextCities[0] ||
+            null
+          );
         });
       } catch (requestError) {
         if (!ignore) {
           setError(requestError.message);
+          setCities([]);
+          setSelectedCity(null);
         }
       } finally {
         if (!ignore) {
@@ -74,7 +82,7 @@ export default function App() {
       try {
         const payload = await fetchCityHistory(selectedCity._id, 7);
         if (!ignore) {
-          setHistory(payload.history);
+          setHistory(Array.isArray(payload.history) ? payload.history : []);
         }
       } catch (requestError) {
         if (!ignore) {
