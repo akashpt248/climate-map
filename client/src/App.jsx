@@ -20,6 +20,39 @@ function SummaryCard({ title, value, subtitle }) {
   );
 }
 
+function findLatestHistoryValue(history, getter) {
+  for (let index = history.length - 1; index >= 0; index -= 1) {
+    const value = getter(history[index]);
+    if (value != null) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function buildSelectedSnapshot(city, history) {
+  const latestHistorySnapshot = history.length ? history[history.length - 1] : null;
+
+  if (!latestHistorySnapshot) {
+    return city?.latestSnapshot || null;
+  }
+
+  const latestAqi = findLatestHistoryValue(history, (entry) => entry?.airQuality?.aqi);
+  const latestPm25 = findLatestHistoryValue(history, (entry) => entry?.airQuality?.pm25);
+  const latestPopulation = findLatestHistoryValue(history, (entry) => entry?.population);
+
+  return {
+    ...latestHistorySnapshot,
+    airQuality: {
+      ...latestHistorySnapshot.airQuality,
+      aqi: latestHistorySnapshot.airQuality?.aqi ?? latestAqi,
+      pm25: latestHistorySnapshot.airQuality?.pm25 ?? latestPm25
+    },
+    population: latestHistorySnapshot.population ?? latestPopulation ?? city?.population ?? null
+  };
+}
+
 export default function App() {
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState(null);
@@ -83,7 +116,30 @@ export default function App() {
       try {
         const payload = await fetchCityHistory(historyCityId, 7);
         if (!ignore) {
-          setHistory(Array.isArray(payload.history) ? payload.history : []);
+          const nextHistory = Array.isArray(payload.history) ? payload.history : [];
+          const nextSnapshot = buildSelectedSnapshot(selectedCity, nextHistory);
+
+          setHistory(nextHistory);
+          setCities((currentCities) =>
+            currentCities.map((city) =>
+              city._id === selectedCity?._id
+                ? {
+                    ...city,
+                    population: nextSnapshot?.population ?? city.population,
+                    latestSnapshot: nextSnapshot ?? city.latestSnapshot
+                  }
+                : city
+            )
+          );
+          setSelectedCity((currentCity) =>
+            currentCity && currentCity._id === selectedCity?._id
+              ? {
+                  ...currentCity,
+                  population: nextSnapshot?.population ?? currentCity.population,
+                  latestSnapshot: nextSnapshot ?? currentCity.latestSnapshot
+                }
+              : currentCity
+          );
         }
       } catch (requestError) {
         if (!ignore) {
@@ -111,8 +167,76 @@ export default function App() {
         b.latestSnapshot.weather.temperature - a.latestSnapshot.weather.temperature
     )[0];
 
-  const selectedHistorySnapshot = history.length ? history[history.length - 1] : null;
-  const selectedSnapshot = selectedHistorySnapshot || selectedCity?.latestSnapshot || null;
+  const selectedSnapshot = buildSelectedSnapshot(selectedCity, history);
+  const selectedAqi =
+    selectedSnapshot?.airQuality?.aqi ??
+    findLatestHistoryValue(history, (entry) => entry?.airQuality?.aqi);
+  const selectedPopulation =
+    selectedSnapshot?.population ??
+    selectedCity?.population ??
+    findLatestHistoryValue(history, (entry) => entry?.population);
+
+  useEffect(() => {
+    if (!selectedCity || historyLoading) return;
+
+    if (selectedAqi != null && selectedPopulation != null) return;
+
+    const latestHistoryPoint = history.length ? history[history.length - 1] : null;
+    const latestHistoryWithAqi = [...history]
+      .reverse()
+      .find((entry) => entry?.airQuality?.aqi != null);
+    const latestHistoryWithPopulation = [...history]
+      .reverse()
+      .find((entry) => entry?.population != null);
+
+    console.groupCollapsed(
+      `[BugReport] Missing live city fields for ${selectedCity.routeId || selectedCity._id}`
+    );
+    console.warn("Selected city", {
+      id: selectedCity._id,
+      routeId: selectedCity.routeId,
+      name: selectedCity.name,
+      country: selectedCity.country,
+      cityPopulation: selectedCity.population ?? null,
+      cityLatestSnapshotRecordedAt: selectedCity.latestSnapshot?.recordedAt ?? null,
+      cityLatestSnapshotTemperature:
+        selectedCity.latestSnapshot?.weather?.temperature ?? null,
+      cityLatestSnapshotAqi: selectedCity.latestSnapshot?.airQuality?.aqi ?? null,
+      cityLatestSnapshotPm25: selectedCity.latestSnapshot?.airQuality?.pm25 ?? null,
+      cityLatestSnapshotPopulation: selectedCity.latestSnapshot?.population ?? null
+    });
+    console.warn("History summary", {
+      historyLength: history.length,
+      latestHistoryRecordedAt: latestHistoryPoint?.recordedAt ?? null,
+      latestHistoryTemperature: latestHistoryPoint?.weather?.temperature ?? null,
+      latestHistoryAqi: latestHistoryPoint?.airQuality?.aqi ?? null,
+      latestHistoryPm25: latestHistoryPoint?.airQuality?.pm25 ?? null,
+      latestHistoryPopulation: latestHistoryPoint?.population ?? null,
+      latestNonNullAqiRecordedAt: latestHistoryWithAqi?.recordedAt ?? null,
+      latestNonNullAqiValue: latestHistoryWithAqi?.airQuality?.aqi ?? null,
+      latestNonNullPm25Value: latestHistoryWithAqi?.airQuality?.pm25 ?? null,
+      latestNonNullPopulationRecordedAt:
+        latestHistoryWithPopulation?.recordedAt ?? null,
+      latestNonNullPopulationValue: latestHistoryWithPopulation?.population ?? null
+    });
+    console.warn("Resolved display values", {
+      selectedSnapshotRecordedAt: selectedSnapshot?.recordedAt ?? null,
+      selectedSnapshotTemperature: selectedSnapshot?.weather?.temperature ?? null,
+      selectedSnapshotAqi: selectedSnapshot?.airQuality?.aqi ?? null,
+      selectedSnapshotPm25: selectedSnapshot?.airQuality?.pm25 ?? null,
+      selectedSnapshotPopulation: selectedSnapshot?.population ?? null,
+      selectedAqi,
+      selectedPopulation
+    });
+    console.groupEnd();
+  }, [
+    history,
+    historyLoading,
+    selectedAqi,
+    selectedCity,
+    selectedPopulation,
+    selectedSnapshot
+  ]);
 
   return (
     <div className="app-shell">
@@ -173,25 +297,23 @@ export default function App() {
                 <span className="chip">{formatTemperature(selectedSnapshot?.weather?.temperature)}</span>
                 <span
                   className="chip"
-                  style={{ backgroundColor: getAqiColor(selectedSnapshot?.airQuality?.aqi) }}
+                  style={{ backgroundColor: getAqiColor(selectedAqi) }}
                 >
-                  {getAqiLabel(selectedSnapshot?.airQuality?.aqi)}
+                  {getAqiLabel(selectedAqi)}
                 </span>
               </div>
 
               <div className="sidebar-metrics">
                 <SummaryCard
                   title="AQI"
-                  value={selectedSnapshot?.airQuality?.aqi ?? "--"}
+                  value={selectedAqi ?? "--"}
                   subtitle="Approximate index from latest measurements"
                 />
                 <SummaryCard
                   title="Population"
                   value={
-                    selectedSnapshot?.population || selectedCity.population
-                      ? new Intl.NumberFormat().format(
-                          selectedSnapshot?.population || selectedCity.population
-                        )
+                    selectedPopulation
+                      ? new Intl.NumberFormat().format(selectedPopulation)
                       : "--"
                   }
                   subtitle="GeoDB sourced city population"
