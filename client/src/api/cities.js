@@ -128,6 +128,26 @@ export async function fetchCities() {
   return cities;
 }
 
+export async function fetchServerMeta() {
+  try {
+    const payload = await getJson("/meta");
+    const data =
+      payload?.data != null && typeof payload.data === "object"
+        ? payload.data
+        : payload ?? {};
+    return {
+      snapshotRefreshCron: typeof data.snapshotRefreshCron === "string" ? data.snapshotRefreshCron : "",
+      snapshotRefreshHint:
+        typeof data.snapshotRefreshHint === "string" ? data.snapshotRefreshHint : ""
+    };
+  } catch {
+    return {
+      snapshotRefreshCron: "",
+      snapshotRefreshHint: ""
+    };
+  }
+}
+
 export async function fetchCityHistory(cityId, days = 7) {
   const payload = await getJson(`/cities/${cityId}/history?days=${days}`);
   const rawHistory = Array.isArray(payload?.data?.history)

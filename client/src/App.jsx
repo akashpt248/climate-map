@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchCities, fetchCityHistory } from "./api/cities";
+import { fetchCities, fetchCityHistory, fetchServerMeta } from "./api/cities";
 import CityModal from "./components/CityModal";
 import LoadingSpinner from "./components/LoadingSpinner";
 import MapView from "./components/MapView";
@@ -30,6 +30,16 @@ function findLatestHistoryValue(history, getter) {
   }
 
   return null;
+}
+
+const HISTORY_DAYS_STORAGE_KEY = "city-history-days";
+const HISTORY_DAY_OPTIONS = [7, 15];
+
+function readStoredHistoryDays() {
+  if (typeof window === "undefined") return 7;
+  const raw = window.localStorage.getItem(HISTORY_DAYS_STORAGE_KEY);
+  const n = Number.parseInt(raw, 10);
+  return HISTORY_DAY_OPTIONS.includes(n) ? n : 7;
 }
 
 function buildSelectedSnapshot(city, history) {
@@ -69,6 +79,11 @@ export default function App() {
   const [historyError, setHistoryError] = useState("");
   const [citiesRequestKey, setCitiesRequestKey] = useState(0);
   const [historyRequestKey, setHistoryRequestKey] = useState(0);
+  const [historyDays, setHistoryDays] = useState(readStoredHistoryDays);
+  const [serverMeta, setServerMeta] = useState({
+    snapshotRefreshCron: "",
+    snapshotRefreshHint: ""
+  });
 
   useEffect(() => {
     let ignore = false;
@@ -126,7 +141,7 @@ export default function App() {
       setHistoryError("");
 
       try {
-        const payload = await fetchCityHistory(historyCityId, 7);
+        const payload = await fetchCityHistory(historyCityId, historyDays);
         if (!ignore) {
           const nextHistory = Array.isArray(payload.history) ? payload.history : [];
           const nextSnapshot = buildSelectedSnapshot(selectedCity, nextHistory);
@@ -174,7 +189,22 @@ export default function App() {
     return () => {
       ignore = true;
     };
-  }, [selectedCity?.routeId, selectedCity?._id, historyRequestKey]);
+  }, [selectedCity?.routeId, selectedCity?._id, historyRequestKey, historyDays]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(HISTORY_DAYS_STORAGE_KEY, String(historyDays));
+  }, [historyDays]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchServerMeta().then((meta) => {
+      if (!cancelled) setServerMeta(meta);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const hottestCity = [...cities]
     .filter((city) => city.latestSnapshot?.weather?.temperature != null)
@@ -352,11 +382,40 @@ export default function App() {
                 <SummaryCard
                   title="Currency"
                   value={selectedCity.currencyCode}
-                  subtitle={formatRate(
-                    selectedSnapshot?.currency?.rateToInr,
-                    selectedCity.currencyCode
-                  )}
+                  subtitle={
+                    <>
+                      {formatRate(
+                        selectedSnapshot?.currency?.rateToInr,
+                        selectedCity.currencyCode
+                      )}
+                      <span className="metric-note">
+                        {" "}
+                        · INR rate is saved with each server snapshot (same job as weather/AQI
+                        {serverMeta.snapshotRefreshHint
+                          ? `, usually ${serverMeta.snapshotRefreshHint}`
+                          : ""}
+                        )
+                      </span>
+                    </>
+                  }
                 />
+              </div>
+
+              <div className="history-range-block">
+                <div className="section-title">Trend window</div>
+                <div className="segmented-control" role="group" aria-label="Historical trend length">
+                  {HISTORY_DAY_OPTIONS.map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      className={`segmented-option ${historyDays === days ? "active" : ""}`}
+                      onClick={() => setHistoryDays(days)}
+                      aria-pressed={historyDays === days}
+                    >
+                      {days} days
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <button className="primary-button" onClick={() => setIsModalOpen(true)}>
@@ -390,6 +449,9 @@ export default function App() {
           city={selectedCity}
           snapshot={selectedSnapshot}
           history={history}
+          historyDays={historyDays}
+          onHistoryDaysChange={setHistoryDays}
+          snapshotRefreshHint={serverMeta.snapshotRefreshHint}
           historyLoading={historyLoading}
           historyError={historyError}
           onRetryHistory={() => setHistoryRequestKey((value) => value + 1)}

@@ -79,6 +79,65 @@ button {
 }
 
 .hero-side,
+.summary-card span {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #cbd5e1;
+}
+
+.metric-note {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.metric-note-block {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-top: 4px;
+}
+
+.history-range-block {
+  margin: 18px 0 8px;
+}
+
+.modal-history-range {
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.segmented-control {
+  display: inline-flex;
+  border-radius: 12px;
+  padding: 4px;
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  gap: 4px;
+}
+
+.segmented-option {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  color: #94a3b8;
+  background: transparent;
+}
+
+.segmented-option:hover {
+  color: #e2e8f0;
+}
+
+.segmented-option.active {
+  background: rgba(15, 118, 110, 0.35);
+  color: #f0fdfa;
+  box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.35);
+}
+
 .sidebar-metrics {
   display: grid;
   gap: 16px;
@@ -129,6 +188,7 @@ button {
 .map-shell {
   height: 580px;
   width: 100%;
+  height: 100% !important;
 }
 
 .leaflet-container {

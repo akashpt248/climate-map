@@ -22,6 +22,9 @@ export default function CityModal({
   city,
   snapshot,
   history,
+  historyDays,
+  onHistoryDaysChange,
+  snapshotRefreshHint,
   historyLoading,
   historyError,
   onRetryHistory,
@@ -84,6 +87,28 @@ export default function CityModal({
               label="Currency vs INR"
               value={formatRate(snapshot?.currency?.rateToInr, snapshot?.currency?.code || city.currencyCode)}
             />
+            <p className="metric-note metric-note-block">
+              INR cross-rate is fetched when the server writes each snapshot (same job as weather and AQI).
+              {snapshotRefreshHint ? ` Typical cadence: ${snapshotRefreshHint}.` : ""} Not polled separately on
+              this page.
+            </p>
+          </div>
+        </div>
+
+        <div className="history-range-block modal-history-range">
+          <div className="section-title">Trend window</div>
+          <div className="segmented-control" role="group" aria-label="Historical trend length">
+            {[7, 15].map((days) => (
+              <button
+                key={days}
+                type="button"
+                className={`segmented-option ${historyDays === days ? "active" : ""}`}
+                onClick={() => onHistoryDaysChange(days)}
+                aria-pressed={historyDays === days}
+              >
+                {days} days
+              </button>
+            ))}
           </div>
         </div>
 
@@ -99,7 +124,7 @@ export default function CityModal({
             </button>
           </div>
         ) : (
-          <TrendChart history={history} />
+          <TrendChart history={history} days={historyDays} />
         )}
       </div>
     </div>

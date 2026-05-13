@@ -9,7 +9,7 @@ import {
   YAxis
 } from "recharts";
 
-export default function TrendChart({ history }) {
+export default function TrendChart({ history, days = 7 }) {
   const data = history.map((entry) => ({
     recordedAt: new Date(entry.recordedAt).toLocaleDateString(undefined, {
       month: "short",
@@ -21,7 +21,7 @@ export default function TrendChart({ history }) {
 
   return (
     <div className="chart-card">
-      <div className="section-title">7-Day Trend</div>
+      <div className="section-title">{days}-Day Trend</div>
       <div className="chart-wrap">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
